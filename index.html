@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Список справ</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <main class="app">
+      <h1 class="visually-hidden">Список справ</h1>
+
+      <form class="new-task" id="new-task-form">
+        <label class="visually-hidden" for="new-task-input">Нова справа</label>
+        <input
+          class="new-task__input"
+          id="new-task-input"
+          name="task"
+          type="text"
+          placeholder="Створити нову справу"
+          autocomplete="off"
+        />
+        <button class="new-task__button" type="submit">Створити</button>
+      </form>
+
+      <ul class="tasks" id="tasks"></ul>
+
+      <p class="empty" id="empty" hidden>
+        Справ поки немає. Додай першу — поле вгорі чекає.
+      </p>
+    </main>
+
+    <!--
+      Єдиний тег <script> у проєкті — точка входу. Усі інші файли
+      підключаються через import усередині JavaScript, а не тегами тут.
+      Vite сам знайде цей рядок, збере граф імпортів і підставить у dist/
+      готовий бандл із хешем у назві.
+
+      Стилі теж підключає JavaScript (import "./style.css" у main.js),
+      а не <link> у цій розмітці — так Vite бачить їх як частину графа
+      і теж збирає, мініфікує й хешує.
+    -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

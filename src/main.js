@@ -62,25 +62,22 @@ elements.list.addEventListener("change", (event) => {
   closest шукає кнопку від того, куди насправді влучив клік: символ ✕
   усередині кнопки теж є ціллю події, а видаляти має саме кнопка.
 */
-elements.list.addEventListener("click", (event) => {
+elements.list.addEventListener("click", async (event) => {
   const button = event.target.closest(".task__delete");
   if (!button) return;
 
   const item = button.closest(".task");
-  // Позицію запам'ятовуємо ДО видалення — після рендера цього <li> вже немає.
+  // Позицію запам'ятовуємо ДО видалення: після рендера цього <li> вже немає.
   const index = [...elements.list.children].indexOf(item);
-
   deleteTask(item.dataset.id);
 
   /*
-    Фокус зникає разом із видаленим рядком. Повертаємо його на хрестик
-    справи, яка стала на це місце; якщо видалили останню — на попередню;
-    якщо список спорожнів — у поле вводу.
+    Динамічний import(): модуль фокуса потрібен лише після кліку, тож
+    Vite виносить його в окремий чанк, а браузер завантажує його тільки
+    тут, під час першого видалення. Далі він уже в кеші модулів.
   */
-  const next =
-    elements.list.children[Math.min(index, elements.list.children.length - 1)];
-  const target = next?.querySelector(".task__delete") ?? elements.input;
-  target.focus();
+  const { focusAfterDelete } = await import("./focus.js");
+  focusAfterDelete(elements.list, index, elements.input);
 });
 
 // Перший рендер: показуємо те, що прочиталося зі сховища при старті.

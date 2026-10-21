@@ -14,7 +14,8 @@ import { loadTasks, saveTasks } from "./storage.js";
 
 /**
  * Приватний стан модуля. Назовні він не експортується — дістатися до нього
- * можна лише через getTasks(), а змінити — лише через addTask/toggleTask.
+ * можна лише через getTasks(), а змінити лише через addTask, toggleTask
+ * і deleteTask.
  * Так неможливо випадково зіпсувати список з іншого файла.
  * @type {Task[]}
  */
@@ -51,23 +52,57 @@ function commit() {
   onChange(getTasks());
 }
 
+/*
+  Нижче три чисті функції: беруть список і повертають новий, нічого не
+  читаючи й не записуючи. Саме їх перевіряють тести в state.test.js,
+  бо результат залежить лише від аргументів.
+*/
+
+/**
+ * Повертає новий список зі справою на початку. Порожній рядок не додається:
+ * тоді повертається той самий список.
+ * @param {Task[]} list
+ * @param {string} text
+ * @param {string} [id] власний id, а не індекс: індекси з'їжджають після кожної зміни
+ * @returns {Task[]}
+ */
+export function withTaskAdded(list, text, id = crypto.randomUUID()) {
+  const trimmed = text.trim();
+  if (trimmed === "") return list;
+  return [{ id, text: trimmed, done: false }, ...list];
+}
+
+/**
+ * Повертає новий список, де справа з цим id перемкнута між «виконано» і «не виконано».
+ * @param {Task[]} list
+ * @param {string} id
+ * @returns {Task[]}
+ */
+export function withTaskToggled(list, id) {
+  // map повертає новий масив, а змінена справа стає новим об'єктом.
+  return list.map((task) =>
+    task.id === id ? { ...task, done: !task.done } : task,
+  );
+}
+
+/**
+ * Повертає новий список без справи з цим id.
+ * @param {Task[]} list
+ * @param {string} id
+ * @returns {Task[]}
+ */
+export function withTaskDeleted(list, id) {
+  return list.filter((task) => task.id !== id);
+}
+
 /**
  * Додає справу в початок списку. Порожній рядок ігнорується.
  * @param {string} text
  */
 export function addTask(text) {
-  const trimmed = text.trim();
-  if (trimmed === "") return;
-
-  /** @type {Task} */
-  const task = {
-    // Власний id, а не індекс: індекси з'їжджають після кожної зміни списку.
-    id: crypto.randomUUID(),
-    text: trimmed,
-    done: false,
-  };
-
-  tasks = [task, ...tasks];
+  const next = withTaskAdded(tasks, text);
+  if (next === tasks) return;
+  tasks = next;
   commit();
 }
 
@@ -76,10 +111,7 @@ export function addTask(text) {
  * @param {string} id
  */
 export function toggleTask(id) {
-  // map повертає новий масив — наявні об'єкти не змінюються.
-  tasks = tasks.map((task) =>
-    task.id === id ? { ...task, done: !task.done } : task,
-  );
+  tasks = withTaskToggled(tasks, id);
   commit();
 }
 
@@ -88,7 +120,6 @@ export function toggleTask(id) {
  * @param {string} id
  */
 export function deleteTask(id) {
-  // filter теж повертає новий масив — без тієї справи, чий id збігся.
-  tasks = tasks.filter((task) => task.id !== id);
+  tasks = withTaskDeleted(tasks, id);
   commit();
 }
